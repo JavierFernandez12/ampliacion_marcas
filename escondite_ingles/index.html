@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>El escondite inglés regular</title>
+  <style>
+    :root {
+      --player1: #ff6961;
+      --player2: #77dd77;
+      --player3: #779ecb;
+      --log-bg: #222;
+      --log-text: #e0e0e0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #c1dfff, #ffe0f0);
+      color: #333;
+      text-align: center;
+      padding: 10px;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+
+    .board {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+    }
+
+    .cell {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #aaa;
+      background: white;
+      border-radius: 5px;
+      font-size: 0.8em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 1px;
+    }
+
+    .player {
+      font-weight: bold;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 0.8em;
+      color: white;
+    }
+
+    .player1 { background-color: var(--player1); }
+    .player2 { background-color: var(--player2); }
+    .player3 { background-color: var(--player3); }
+    .heart::after { content: " ❤️"; }
+
+    #controls, #bagDisplay, #log {
+      max-width: 360px;
+      margin: 5px auto;
+      text-align: left;
+      font-size: 0.85em;
+    }
+
+    #bagDisplay {
+      background: #e7ffe7;
+      padding: 6px;
+      border-left: 4px solid #4caf50;
+      border-radius: 6px;
+    }
+
+    #log {
+      background: var(--log-bg);
+      color: var(--log-text);
+      font-family: monospace;
+      padding: 6px;
+      border-radius: 6px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    select, button {
+      font-size: 0.85em;
+      margin: 3px;
+      padding: 4px 8px;
+    }
+
+    button {
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+
+
+<div class="board" id="board"></div>
+<div id="controls"></div>
+<button onclick="nextTurn()">▶ Turno</button>
+
+<div id="bagDisplay"></div>
+<div id="log"></div>
+
+<script>
+const NUM_CASILLAS = 10;
+const players = [
+  { name: "Jugador 1", pos: 0, moving: false, heart: false, color: "player1" },
+  { name: "Jugador 2", pos: 0, moving: false, heart: false, color: "player2" },
+  { name: "Jugador 3", pos: 0, moving: false, heart: false, color: "player3" }
+];
+
+let dicePool = ['N1', 'N2', 'N3', 'R'];
+let usedBlackDice = [];
+
+function createBoard() {
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  players.forEach((player, index) => {
+    const col = document.createElement("div");
+    col.className = "column";
+    for (let i = 0; i < NUM_CASILLAS; i++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      if (player.pos === i) {
+        cell.innerHTML = `<span class="player ${player.color}${player.heart ? ' heart' : ''}">P${index + 1}</span>`;
+      }
+      col.appendChild(cell);
+    }
+    board.appendChild(col);
+  });
+}
+
+function setupControls() {
+  const controls = document.getElementById("controls");
+  controls.innerHTML = "";
+  players.forEach((player, i) => {
+    controls.innerHTML += `
+      <label>${player.name}: 
+        <select id="action-${i}">
+          <option value="andar">Andar</option>
+          <option value="pararse">Pararse</option>
+        </select>
+      </label><br>`;
+  });
+}
+
+function updateBagDisplay() {
+  const bag = document.getElementById("bagDisplay");
+  bag.innerHTML = `<strong>Dados en la bolsa:</strong> 🎲 ${dicePool.join(", ") || "🌀 vacía"}`;
+}
+
+function throwDie(type) {
+  if (type === 'N1') return Math.random() < 2/6 ? 2 : 1;
+  if (type === 'N2') return Math.random() < 2/6 ? 1 : 0;
+  if (type === 'N3') return Math.random() < 2/6 ? 1 : 0;
+  if (type === 'R') return Math.random() < 5/6 ? 1 : 0;
+  return 0;
+}
+
+function nextTurn() {
+  const log = document.getElementById("log");
+  log.innerHTML = "";
+
+  players.forEach((player, i) => {
+    const action = document.getElementById(`action-${i}`).value;
+    player.moving = (action === "andar");
+  });
+
+  const drawn = dicePool.splice(Math.floor(Math.random() * dicePool.length), 1)[0];
+  log.innerHTML += `🎲 Dado sacado: ${drawn}<br>`;
+  if (drawn === 'R') {
+    dicePool = ['N1', 'N2', 'N3', 'R'];
+    log.innerHTML += `🔁 Dado rojo: ¡la bolsa se reinicia!<br>`;
+  }
+  if (drawn.startsWith('N')) usedBlackDice.push(drawn);
+
+  players.forEach(player => {
+    if (!player.moving) {
+      if (drawn === 'R' && !player.heart) {
+        player.heart = true;
+        log.innerHTML += `${player.name} gana un ❤️<br>`;
+      }
+    } else {
+      if (drawn.startsWith('N')) {
+        let total = 0;
+        usedBlackDice.forEach(d => total += throwDie(d));
+        player.pos = Math.min(NUM_CASILLAS - 1, player.pos + total);
+        log.innerHTML += `⬆ ${player.name} avanza ${total}<br>`;
+      } else if (drawn === 'R') {
+        if (player.heart) {
+          player.heart = false;
+          log.innerHTML += `${player.name} pierde su ❤️<br>`;
+        } else {
+          const all = [...usedBlackDice, 'R'];
+          let total = 0;
+          all.forEach(d => total += throwDie(d));
+          player.pos = Math.max(0, player.pos - total);
+          log.innerHTML += `⬇ ${player.name} retrocede ${total}<br>`;
+        }
+      }
+    }
+  });
+
+  const winners = players.filter(p => p.pos >= NUM_CASILLAS - 1);
+  if (winners.length > 0) {
+    alert("🏁 Gana: " + winners.map(w => w.name).join(", "));
+    resetGame();
+    return;
+  }
+
+  createBoard();
+  setupControls();
+  updateBagDisplay();
+}
+
+function resetGame() {
+  players.forEach(p => {
+    p.pos = 0;
+    p.heart = false;
+  });
+  usedBlackDice = [];
+  dicePool = ['N1', 'N2', 'N3', 'R'];
+  createBoard();
+  setupControls();
+  updateBagDisplay();
+  document.getElementById("log").innerHTML = "";
+}
+
+resetGame();
+</script>
+
+</body>
+</html>
