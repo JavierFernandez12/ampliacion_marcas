@@ -1,0 +1,94 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to bottom right, #c1dfff, #ffe0f0);
+  color: #333;
+  text-align: center;
+  padding: 10px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+
+.tablero {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.columna {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+}
+
+.casilla {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #aaa;
+  background: white;
+  border-radius: 5px;
+  font-size: 0.8em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1px;
+}
+
+.ficha {
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  color: white;
+}
+
+.jugador1 { background-color: red}
+.jugador2 { background-color: green}
+.jugador3 { background-color: blue }
+.corazon::after { content: " ❤️"; }
+
+#controles, #bolsaDados, #registro {
+  max-width: 360px;
+  margin: 5px auto;
+  text-align: left;
+  font-size: 0.85em;
+}
+
+#bolsaDados {
+  background: #e7ffe7;
+  padding: 6px;
+  border-left: 4px solid #4caf50;
+  border-radius: 6px;
+}
+
+#registro {
+  background-color: black;
+  color: white;
+  font-family: monospace;
+  padding: 6px;
+  border-radius: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+select, button {
+  font-size: 0.85em;
+  margin: 3px;
+  padding: 4px 8px;
+}
+
+button {
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #555;
+}
